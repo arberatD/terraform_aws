@@ -6,8 +6,8 @@ provider "github" {
   token = var.github_token
 }
 resource "aws_codestarconnections_connection" "github" {
-    name = "my-github-connection"
-    provider_type = "GitHub"
+  name          = "my-github-connection"
+  provider_type = "GitHub"
 }
 
 resource "aws_codepipeline" "pipeline" {
@@ -19,7 +19,7 @@ resource "aws_codepipeline" "pipeline" {
     type     = "S3"
   }
 
-stage {
+  stage {
     name = "Source"
 
     action {
@@ -31,9 +31,9 @@ stage {
       output_artifacts = ["source_output"]
 
       configuration = {
-        ConnectionArn = aws_codestarconnections_connection.github.arn
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
         FullRepositoryId = "${var.github_owner}/${var.github_repo}"
-        BranchName = var.github_branch
+        BranchName       = var.github_branch
       }
     }
   }
@@ -43,12 +43,12 @@ stage {
     name = "Build"
 
     action {
-      name             = "Build"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      version          = "1"
+      name            = "Build"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      input_artifacts = ["source_output"]
+      version         = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.build_project.name
@@ -95,8 +95,8 @@ resource "aws_codebuild_project" "build_project" {
   }
 
   source {
-    type            = "CODEPIPELINE"
-    buildspec       = file("${path.module}/../codebuild/buildspec.yml")
+    type      = "CODEPIPELINE"
+    buildspec = file("${path.module}/../codebuild/buildspec.yml")
   }
 }
 
@@ -218,7 +218,7 @@ resource "aws_iam_policy" "codestar_connections" {
     {
       "Effect": "Allow",
       "Action": "codestar-connections:UseConnection",
-      "Resource": "arn:aws:codestar-connections:us-east-1:586283906760:connection/0404ab44-9493-47d2-ab3f-5d847ac96a97"
+      "Resource": "*"
     }
   ]
 }
@@ -253,12 +253,12 @@ resource "aws_iam_role_policy_attachment" "s3" {
   policy_arn = aws_iam_policy.s3.arn
 }
 
-resource "random_pet" "name" {
+resource "random_pet" "bucket_suffix" {
   length = 2
   prefix = "techstarter"
 }
 resource "aws_s3_bucket" "artifact_store" {
   bucket = random_pet.bucket_suffix.id
-# Remove the aws_s3_bucket_acl attribute
-# aws_s3_bucket_acl   = "private"
+  # Remove the aws_s3_bucket_acl attribute
+  # aws_s3_bucket_acl   = "private"
 }
